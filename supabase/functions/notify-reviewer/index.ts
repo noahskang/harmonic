@@ -1,16 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const APP_URL = 'https://harmonicapp.netlify.app'
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'Harmonic <onboarding@resend.dev>'
+const FROM_EMAIL = 'noahskang@gmail.com'
+const FROM_NAME = 'Harmonic'
 
 Deno.serve(async (req) => {
   try {
     const payload = await req.json()
 
-    // Only handle INSERT events on review_requests
     if (payload.type !== 'INSERT') {
       return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200 })
     }
@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 })
     }
 
-    // Check if reviewer already has a Harmonic account
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     const { data: profile } = await supabase
       .from('profiles')
@@ -76,29 +75,29 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'api-key': BREVO_API_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [reviewer_email],
+        sender: { name: FROM_NAME, email: FROM_EMAIL },
+        to: [{ email: reviewer_email }],
         subject,
-        html,
+        htmlContent: html,
       }),
     })
 
     const result = await res.json()
 
     if (!res.ok) {
-      console.error('Resend error:', result)
+      console.error('Brevo error:', result)
       return new Response(JSON.stringify({ error: result }), { status: 500 })
     }
 
-    console.log('Email sent to', reviewer_email, result.id)
-    return new Response(JSON.stringify({ ok: true, id: result.id }), { status: 200 })
+    console.log('Email sent to', reviewer_email, result.messageId)
+    return new Response(JSON.stringify({ ok: true, id: result.messageId }), { status: 200 })
 
   } catch (err) {
     console.error('Unexpected error:', err)
