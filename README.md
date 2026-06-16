@@ -1,73 +1,71 @@
-# React + TypeScript + Vite
+# Harmonic
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Church HR app — peer feedback and self-reviews.
 
-Currently, two official plugins are available:
+## Features (Phase 1)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Create account and set a leader email
+- Request peer reviews from colleagues by email
+- Write self-reviews ("What did I do well?", "What are my growth areas?")
+- Write peer feedback ("I'm thankful for...", "My constructive feedback is...")
+- View all attributed feedback you've received
+- Leader view: see mentees' self-reviews and peer feedback
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Supabase
 
-## Expanding the ESLint configuration
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. In the SQL Editor, run the contents of `supabase/schema.sql`
+3. Go to **Settings → API** and copy:
+   - **Project URL** → paste into `.env.local` as `VITE_SUPABASE_URL`
+   - **anon/public key** → paste into `.env.local` as `VITE_SUPABASE_ANON_KEY`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 2. Local dev
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 3. GitHub + Netlify deploy
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Install GitHub CLI (if not installed)
+brew install gh
+gh auth login
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Create repo and push
+gh repo create harmonic --public --source=. --remote=origin --push
+
+# Then on Netlify:
+# 1. Connect GitHub repo
+# 2. Build command: npm run build
+# 3. Publish directory: dist
+# 4. Add env vars: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+```
+
+## Project structure
+
+```
+src/
+  lib/
+    supabase.ts      Supabase client + type definitions
+    auth.tsx         AuthContext and useAuth hook
+  components/
+    Layout.tsx       Nav + page wrapper
+    ProtectedRoute   Redirect to /login if unauthenticated
+  pages/
+    Login / Signup
+    Dashboard        Activity overview
+    Profile          Name + leader email settings
+    SelfReview       Write and view past self-reviews
+    RequestReview    Send peer review requests by email
+    PendingReviews   Reviews I need to write for others
+    WriteReview      Peer feedback form
+    MyFeedback       See feedback received from peers
+    LeaderView       See mentees' full reports
+supabase/
+  schema.sql         Tables + RLS policies (run once in Supabase SQL editor)
+netlify.toml         SPA redirect config
 ```
