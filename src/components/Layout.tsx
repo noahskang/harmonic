@@ -44,6 +44,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <NavLink to="/my-feedback">My Feedback</NavLink>
             <NavLink to="/leader-view">Leader View</NavLink>
             <NavLink to="/profile">Profile</NavLink>
+            {profile?.is_admin && <NavLink to="/admin">Admin</NavLink>}
             <button
               onClick={handleSignOut}
               className="ml-2 px-3 py-1.5 rounded-lg text-sm text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"

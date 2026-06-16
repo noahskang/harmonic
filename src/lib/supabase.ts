@@ -10,6 +10,7 @@ export type Profile = {
   name: string
   email: string
   leader_emails: string[]
+  is_admin: boolean
   created_at: string
 }
 

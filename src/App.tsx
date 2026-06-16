@@ -11,6 +11,7 @@ import PendingReviews from './pages/PendingReviews'
 import WriteReview from './pages/WriteReview'
 import MyFeedback from './pages/MyFeedback'
 import LeaderView from './pages/LeaderView'
+import Admin from './pages/Admin'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/pending-reviews/:requestId" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
           <Route path="/my-feedback" element={<ProtectedRoute><MyFeedback /></ProtectedRoute>} />
           <Route path="/leader-view" element={<ProtectedRoute><LeaderView /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
