@@ -10,9 +10,7 @@ type MenteeReport = {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  })
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 export default function LeaderView() {
@@ -41,16 +39,8 @@ export default function LeaderView() {
     setSelected(null)
 
     const [selfRes, peerRes] = await Promise.all([
-      supabase
-        .from('self_reviews')
-        .select('*')
-        .eq('user_id', mentee.id)
-        .order('submitted_at', { ascending: false }),
-      supabase
-        .from('peer_reviews')
-        .select('*')
-        .eq('reviewee_id', mentee.id)
-        .order('submitted_at', { ascending: false }),
+      supabase.from('self_reviews').select('*').eq('user_id', mentee.id).order('submitted_at', { ascending: false }),
+      supabase.from('peer_reviews').select('*').eq('reviewee_id', mentee.id).order('submitted_at', { ascending: false }),
     ])
 
     const peerReviews = peerRes.data ?? []
@@ -58,54 +48,45 @@ export default function LeaderView() {
     let profileMap: Record<string, string> = {}
 
     if (reviewerIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, name')
-        .in('id', reviewerIds)
+      const { data: profiles } = await supabase.from('profiles').select('id, name').in('id', reviewerIds)
       profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p.name]))
     }
 
     setSelected({
       profile: mentee,
       selfReviews: selfRes.data ?? [],
-      peerReviews: peerReviews.map(r => ({
-        ...r,
-        reviewer_name: profileMap[r.reviewer_id] ?? 'Someone',
-      })),
+      peerReviews: peerReviews.map(r => ({ ...r, reviewer_name: profileMap[r.reviewer_id] ?? 'Someone' })),
     })
     setReportLoading(false)
   }
 
-  if (loading) return <Layout><p className="text-gray-400">Loading...</p></Layout>
+  if (loading) return <Layout><p className="text-stone-400 text-sm">Loading...</p></Layout>
 
   return (
     <Layout>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-2">Leader View</h1>
-      <p className="text-gray-500 text-sm mb-8">
-        Members who have designated you as their leader.
-      </p>
+      <h1 className="text-2xl font-semibold text-stone-700 mb-1">Leader View</h1>
+      <p className="text-stone-400 text-sm mb-8">Members who have designated you as their leader.</p>
 
       {mentees.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
-          <p className="text-gray-400 text-sm mb-1">No mentees yet.</p>
-          <p className="text-gray-300 text-xs">
+        <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center">
+          <p className="text-stone-400 text-sm mb-1">No mentees yet.</p>
+          <p className="text-stone-300 text-xs">
             Members can add your email ({profile?.email}) as a leader in their Profile settings.
           </p>
         </div>
       ) : (
         <div className="flex gap-6">
-          {/* Mentee list */}
-          <div className="w-48 shrink-0">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Members</p>
-            <div className="space-y-1">
+          <div className="w-44 shrink-0">
+            <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Members</p>
+            <div className="space-y-0.5">
               {mentees.map(m => (
                 <button
                   key={m.id}
                   onClick={() => loadReport(m)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
                     selected?.profile.id === m.id
-                      ? 'bg-indigo-100 text-indigo-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-amber-100 text-amber-800 font-medium'
+                      : 'text-stone-600 hover:bg-stone-100'
                   }`}
                 >
                   {m.name}
@@ -114,38 +95,36 @@ export default function LeaderView() {
             </div>
           </div>
 
-          {/* Report panel */}
           <div className="flex-1">
             {!selected && !reportLoading && (
-              <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
-                <p className="text-gray-400 text-sm">Select a member to view their report.</p>
+              <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center">
+                <p className="text-stone-400 text-sm">Select a member to view their report.</p>
               </div>
             )}
-            {reportLoading && <p className="text-gray-400 text-sm">Loading report...</p>}
+            {reportLoading && <p className="text-stone-400 text-sm">Loading report...</p>}
             {selected && !reportLoading && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">{selected.profile.name}</h2>
+                <h2 className="text-lg font-semibold text-stone-700">{selected.profile.name}</h2>
 
-                {/* Self reviews */}
                 <section>
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
+                  <h3 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
                     Self Reviews ({selected.selfReviews.length})
                   </h3>
                   {selected.selfReviews.length === 0 ? (
-                    <p className="text-sm text-gray-400">No self reviews yet.</p>
+                    <p className="text-sm text-stone-400">No self reviews yet.</p>
                   ) : (
                     <div className="space-y-3">
                       {selected.selfReviews.map(r => (
-                        <div key={r.id} className="bg-white rounded-xl border border-gray-200 p-4">
-                          <p className="text-xs text-gray-400 mb-3">{formatDate(r.submitted_at)}</p>
-                          <div className="space-y-2">
+                        <div key={r.id} className="bg-white rounded-2xl border border-stone-200 p-4">
+                          <p className="text-xs text-stone-400 mb-3">{formatDate(r.submitted_at)}</p>
+                          <div className="space-y-3">
                             <div>
-                              <p className="text-xs font-medium text-gray-500 mb-0.5">What I did well</p>
-                              <p className="text-sm text-gray-800 whitespace-pre-wrap">{r.did_well}</p>
+                              <p className="text-xs font-medium text-stone-400 mb-1">What I did well</p>
+                              <p className="text-sm text-stone-600 whitespace-pre-wrap leading-relaxed">{r.did_well}</p>
                             </div>
-                            <div>
-                              <p className="text-xs font-medium text-gray-500 mb-0.5">Growth areas</p>
-                              <p className="text-sm text-gray-800 whitespace-pre-wrap">{r.growth_areas}</p>
+                            <div className="border-t border-stone-100 pt-3">
+                              <p className="text-xs font-medium text-stone-400 mb-1">Growth areas</p>
+                              <p className="text-sm text-stone-600 whitespace-pre-wrap leading-relaxed">{r.growth_areas}</p>
                             </div>
                           </div>
                         </div>
@@ -154,29 +133,28 @@ export default function LeaderView() {
                   )}
                 </section>
 
-                {/* Peer reviews */}
                 <section>
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
+                  <h3 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
                     Peer Feedback ({selected.peerReviews.length})
                   </h3>
                   {selected.peerReviews.length === 0 ? (
-                    <p className="text-sm text-gray-400">No peer feedback yet.</p>
+                    <p className="text-sm text-stone-400">No peer feedback yet.</p>
                   ) : (
                     <div className="space-y-3">
                       {selected.peerReviews.map(r => (
-                        <div key={r.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                        <div key={r.id} className="bg-white rounded-2xl border border-stone-200 p-4">
                           <div className="flex items-center justify-between mb-3">
-                            <p className="text-sm font-medium text-gray-900">From: {r.reviewer_name}</p>
-                            <p className="text-xs text-gray-400">{formatDate(r.submitted_at)}</p>
+                            <p className="text-sm font-medium text-stone-700">From: {r.reviewer_name}</p>
+                            <p className="text-xs text-stone-400">{formatDate(r.submitted_at)}</p>
                           </div>
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             <div>
-                              <p className="text-xs font-medium text-indigo-600 mb-0.5">Thankful for</p>
-                              <p className="text-sm text-gray-800 whitespace-pre-wrap">{r.thankful_for}</p>
+                              <p className="text-xs font-medium text-amber-700 mb-1">Thankful for</p>
+                              <p className="text-sm text-stone-600 whitespace-pre-wrap leading-relaxed">{r.thankful_for}</p>
                             </div>
-                            <div>
-                              <p className="text-xs font-medium text-amber-600 mb-0.5">Constructive feedback</p>
-                              <p className="text-sm text-gray-800 whitespace-pre-wrap">{r.constructive_feedback}</p>
+                            <div className="border-t border-stone-100 pt-3">
+                              <p className="text-xs font-medium text-stone-400 mb-1">Constructive feedback</p>
+                              <p className="text-sm text-stone-600 whitespace-pre-wrap leading-relaxed">{r.constructive_feedback}</p>
                             </div>
                           </div>
                         </div>

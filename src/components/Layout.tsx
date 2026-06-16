@@ -9,10 +9,10 @@ function NavLink({ to, children }: { to: string; children: ReactNode }) {
   return (
     <Link
       to={to}
-      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
         active
-          ? 'bg-indigo-100 text-indigo-700'
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          ? 'bg-amber-100 text-amber-800 font-medium'
+          : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'
       }`}
     >
       {children}
@@ -30,13 +30,13 @@ export default function Layout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/dashboard" className="text-lg font-semibold text-indigo-700 tracking-tight">
+    <div className="min-h-screen" style={{ backgroundColor: '#faf8f5' }}>
+      <nav className="bg-white border-b border-stone-200">
+        <div className="max-w-4xl mx-auto px-5 py-3 flex items-center justify-between">
+          <Link to="/dashboard" className="text-lg font-semibold text-stone-700 tracking-tight">
             Harmonic
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <NavLink to="/dashboard">Home</NavLink>
             <NavLink to="/self-review">Self Review</NavLink>
             <NavLink to="/request-review">Request Review</NavLink>
@@ -46,19 +46,19 @@ export default function Layout({ children }: { children: ReactNode }) {
             <NavLink to="/profile">Profile</NavLink>
             <button
               onClick={handleSignOut}
-              className="ml-2 px-3 py-2 rounded-md text-sm text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+              className="ml-2 px-3 py-1.5 rounded-lg text-sm text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
             >
               Sign out
             </button>
           </div>
         </div>
         {profile && (
-          <div className="max-w-4xl mx-auto px-4 pb-2 text-xs text-gray-400">
-            Signed in as {profile.name}
+          <div className="max-w-4xl mx-auto px-5 pb-2 text-xs text-stone-400">
+            {profile.name}
           </div>
         )}
       </nav>
-      <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+      <main className="max-w-4xl mx-auto px-5 py-10">{children}</main>
     </div>
   )
 }

@@ -20,10 +20,7 @@ export default function RequestReview() {
       .filter(Boolean)
       .filter(s => s.includes('@'))
 
-    if (emailList.length === 0) {
-      setSubmitting(false)
-      return
-    }
+    if (emailList.length === 0) { setSubmitting(false); return }
 
     const outcomes: { email: string; ok: boolean }[] = []
 
@@ -32,7 +29,6 @@ export default function RequestReview() {
         outcomes.push({ email, ok: false })
         continue
       }
-
       const { error } = await supabase.from('review_requests').insert({
         requester_id: user!.id,
         requester_name: profile!.name,
@@ -50,15 +46,15 @@ export default function RequestReview() {
   return (
     <Layout>
       <div className="max-w-lg">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Request Peer Review</h1>
-        <p className="text-gray-500 text-sm mb-8">
-          Enter the email addresses of people you'd like feedback from. They'll see the request when they log in.
+        <h1 className="text-2xl font-semibold text-stone-700 mb-1">Request Peer Review</h1>
+        <p className="text-stone-400 text-sm mb-8">
+          Enter email addresses of people you'd like feedback from.
         </p>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-stone-200 p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-2">
+              <label className="block text-sm font-medium text-stone-600 mb-2">
                 Peer email addresses
               </label>
               <textarea
@@ -66,43 +62,36 @@ export default function RequestReview() {
                 value={emails}
                 onChange={e => setEmails(e.target.value)}
                 rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none font-mono"
+                className="w-full px-3 py-2.5 border border-stone-200 rounded-xl text-sm bg-stone-50 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent resize-none font-mono transition"
                 placeholder={"peer1@church.com\npeer2@church.com"}
               />
-              <p className="text-xs text-gray-400 mt-1">
-                One email per line, or comma-separated.
-              </p>
+              <p className="text-xs text-stone-400 mt-1.5">One per line, or comma-separated.</p>
             </div>
+
             {results.length > 0 && (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {results.map(r => (
                   <div key={r.email} className="flex items-center gap-2 text-sm">
-                    <span className={r.ok ? 'text-green-600' : 'text-red-500'}>
-                      {r.ok ? '✓' : '✗'}
-                    </span>
-                    <span className="text-gray-700">{r.email}</span>
-                    {!r.ok && (
-                      <span className="text-gray-400 text-xs">
-                        (can't request your own review)
-                      </span>
-                    )}
+                    <span className={r.ok ? 'text-green-600' : 'text-red-400'}>{r.ok ? '✓' : '✗'}</span>
+                    <span className="text-stone-600">{r.email}</span>
+                    {!r.ok && <span className="text-stone-400 text-xs">(can't request your own review)</span>}
                   </div>
                 ))}
               </div>
             )}
+
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              className="px-5 py-2.5 bg-stone-700 text-white rounded-xl text-sm font-medium hover:bg-stone-800 disabled:opacity-50 transition-colors"
             >
-              {submitting ? 'Sending requests...' : 'Send review requests'}
+              {submitting ? 'Sending...' : 'Send review requests'}
             </button>
           </form>
         </div>
 
-        <div className="mt-6 bg-indigo-50 rounded-xl border border-indigo-100 p-4 text-sm text-indigo-700">
-          <strong>How it works:</strong> Each person you invite will see a pending review request on their
-          dashboard when they log in. They'll fill out feedback for you there.
+        <div className="mt-5 bg-amber-50 rounded-2xl border border-amber-100 p-4 text-sm text-amber-800 leading-relaxed">
+          Peers will see your request on their dashboard when they log in.
         </div>
       </div>
     </Layout>
