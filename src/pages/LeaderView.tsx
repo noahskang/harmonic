@@ -28,7 +28,7 @@ export default function LeaderView() {
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('leader_email', profile!.email)
+        .contains('leader_emails', [profile!.email])
         .order('name')
       setMentees(data ?? [])
       setLoading(false)
@@ -89,7 +89,7 @@ export default function LeaderView() {
         <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
           <p className="text-gray-400 text-sm mb-1">No mentees yet.</p>
           <p className="text-gray-300 text-xs">
-            Members can add your email ({profile?.email}) as their leader in their Profile settings.
+            Members can add your email ({profile?.email}) as a leader in their Profile settings.
           </p>
         </div>
       ) : (

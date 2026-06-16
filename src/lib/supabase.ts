@@ -9,7 +9,7 @@ export type Profile = {
   id: string
   name: string
   email: string
-  leader_email: string | null
+  leader_emails: string[]
   created_at: string
 }
 

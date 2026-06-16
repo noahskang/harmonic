@@ -20,7 +20,7 @@ export default function Signup() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, leader_email: leaderEmail || null } },
+      options: { data: { name } },
     })
 
     if (signUpError || !data.user) {
@@ -29,9 +29,8 @@ export default function Signup() {
       return
     }
 
-    // If Supabase requires email confirmation, there's no session yet.
-    // Store pending profile data in localStorage so we can create it after confirmation.
-    const pendingProfile = { id: data.user.id, name, email, leader_email: leaderEmail || null }
+    const leaderEmails = leaderEmail.trim() ? [leaderEmail.trim().toLowerCase()] : []
+    const pendingProfile = { id: data.user.id, name, email, leader_emails: leaderEmails }
 
     if (data.session) {
       // Email confirmation is off — create profile immediately
