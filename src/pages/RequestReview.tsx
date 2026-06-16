@@ -60,7 +60,8 @@ export default function RequestReview() {
         reviewer_email: email,
         status: 'pending',
       })
-      outcomes.push({ email, ok: !error, reason: error?.message })
+      if (error) console.error('review_requests insert error:', JSON.stringify(error))
+      outcomes.push({ email, ok: !error, reason: error?.message ?? error?.code })
     }
 
     setResults(outcomes)
@@ -104,7 +105,7 @@ export default function RequestReview() {
                       <span className="text-stone-400 text-xs">
                         {r.reason === 'self'
                           ? "(can't request your own review)"
-                          : '(request failed — try again)'}
+                          : `(error: ${r.reason ?? 'unknown'})`}
                       </span>
                     )}
                   </div>
