@@ -43,10 +43,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
+      if (session?.user) {
+        // If signup stored a pending profile (email confirmation flow), create it now
+        const pending = localStorage.getItem('pending_profile')
+        if (pending) {
+          try {
+            const data = JSON.parse(pending)
+            if (data.id === session.user.id) {
+              await supabase.from('profiles').upsert(data, { onConflict: 'id', ignoreDuplicates: true })
+              localStorage.removeItem('pending_profile')
+            }
+          } catch { localStorage.removeItem('pending_profile') }
+        }
+        fetchProfile(session.user.id)
+      } else {
+        setProfile(null)
+      }
     })
 
     return () => subscription.unsubscribe()

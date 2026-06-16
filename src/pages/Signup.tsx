@@ -10,33 +10,61 @@ export default function Signup() {
   const [leaderEmail, setLeaderEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checkEmail, setCheckEmail] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name, leader_email: leaderEmail || null } },
+    })
+
     if (signUpError || !data.user) {
       setError(signUpError?.message ?? 'Sign up failed')
       setLoading(false)
       return
     }
 
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      name,
-      email,
-      leader_email: leaderEmail || null,
-    })
+    // If Supabase requires email confirmation, there's no session yet.
+    // Store pending profile data in localStorage so we can create it after confirmation.
+    const pendingProfile = { id: data.user.id, name, email, leader_email: leaderEmail || null }
 
-    setLoading(false)
-    if (profileError) {
-      setError(profileError.message)
-      return
+    if (data.session) {
+      // Email confirmation is off — create profile immediately
+      const { error: profileError } = await supabase.from('profiles').insert(pendingProfile)
+      setLoading(false)
+      if (profileError) { setError(profileError.message); return }
+      navigate('/dashboard')
+    } else {
+      // Email confirmation is on — save profile data for after confirmation
+      localStorage.setItem('pending_profile', JSON.stringify(pendingProfile))
+      setLoading(false)
+      setCheckEmail(true)
     }
+  }
 
-    navigate('/dashboard')
+  if (checkEmail) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-sm text-center">
+          <h1 className="text-3xl font-semibold text-indigo-700 tracking-tight mb-4">Harmonic</h1>
+          <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <div className="text-4xl mb-4">📬</div>
+            <h2 className="text-lg font-medium text-gray-900 mb-2">Check your email</h2>
+            <p className="text-sm text-gray-500">
+              We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then come back to sign in.
+            </p>
+            <Link to="/login" className="mt-6 inline-block text-sm text-indigo-600 hover:underline">
+              Go to sign in
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
