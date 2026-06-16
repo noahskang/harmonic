@@ -54,12 +54,25 @@ export default function RequestReview() {
         outcomes.push({ email, ok: false, reason: 'self' })
         continue
       }
-      const { error } = await supabase.from('review_requests').insert({
-        requester_id: user.id,
-        requester_name: profile.name,
-        reviewer_email: email,
-        status: 'pending',
-      })
+      const { data: inserted, error } = await supabase
+        .from('review_requests')
+        .insert({
+          requester_id: user.id,
+          requester_name: profile.name,
+          reviewer_email: email,
+          status: 'pending',
+        })
+        .select()
+        .single()
+
+      if (!error && inserted) {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-reviewer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'INSERT', record: inserted }),
+        }).catch(() => {})
+      }
+
       outcomes.push({ email, ok: !error, reason: error?.message })
     }
 
